@@ -1,0 +1,26 @@
+QPushButton
+{
+  border: 2px solid lightgray;
+  border-radius: 6;
+  font-size: 12px;
+}
+QPushButton:hover
+{
+  border: 2px solid LightCyan;
+  border-radius: 6;
+}
+QLineEdit
+{
+  border-style: solid;
+  border: 2px solid lightgray;
+  border-radius: 6;
+}
+QLineEdit:hover
+{
+  background-color: AliceBlue;
+}
+QTreeView
+{
+  border:  2px solid lightgray;
+  border-radius: 6;
+}
