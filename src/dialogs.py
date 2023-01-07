@@ -253,3 +253,81 @@ class PermissionsDialog(QDialog):
             others += 1
 
         self.folder_permissions = int(f"{owner}{group}{others}")
+
+
+class RenameDialog(QDialog):
+    def __init__(self, parent, dir_1=None):
+        super(RenameDialog, self).__init__(parent)
+        uic.loadUi('../ui/rename.ui', self)
+
+        self.setWindowIcon(QIcon('../images/edit.png'))
+
+        if dir_1:
+            self.dir1 = dir_1
+            self.dir2 = dir_1
+            self.fname = os.path.basename(self.dir1)
+        else:
+            self.dir1 = ''
+            self.dir2 = ''
+            self.fname = ''
+
+        self.set_up()
+
+    def set_up(self):
+        self.current_name_label.setText('Current naming')
+        self.rename_location_label.setText('Renaming choice')
+
+        self.current_name_edit.setText(self.dir1)
+        self.rename_location_edit.setText(self.dir2)
+
+        self.buttonBox.accepted.connect(lambda: self.rename_item(self.current_name_edit.text(),
+                                                                 self.rename_location_edit.text()))
+
+    @staticmethod
+    def rename_item(source: str, rename_to: str):
+        try:
+            os.rename(source, rename_to)
+            # shutil.move(source, move_to)
+            logging.info(f"Renamed {source} to {rename_to}")
+        # Source is a file, but destination is a directory
+        except IsADirectoryError:
+            logging.error('Destination only a directory')
+        # Source is a directory, but destination is a file
+        except NotADirectoryError:
+            logging.error('Source a directory and destination a file')
+        except PermissionError:
+            logging.error('Operation not permitted')
+        except FileExistsError:
+            logging.info("File already Exists")
+            choice = RenameDialog._remove_dialog()
+            if choice:
+                try:
+                    os.remove(rename_to)
+                    logging.info(f"Pre-existing file/folder removed - renaming {source}")
+                    os.rename(source, rename_to)
+                    logging.info(f"Renamed {source} to {rename_to}")
+                except OSError as error:
+                    print(error)
+        except OSError as error:
+            logging.error(error)
+
+    @staticmethod
+    def _remove_dialog():
+        """
+        This function creates a custom dialog to warn the user that the folder to be removed is not empty.
+
+        :return: Boolean response
+        """
+        remove_check_dialog = QMessageBox()
+        icon = QIcon('../images/edit.png')
+        remove_check_dialog.setIconPixmap(icon.pixmap(20, 20))
+        remove_check_dialog.setWindowTitle("Check Rename Event")
+        remove_check_dialog.setText("File already exists with this name - delete existing and rename?")
+        remove_check_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+
+        returnValue = remove_check_dialog.exec()
+
+        if returnValue == QMessageBox.Yes:
+            return True
+        else:
+            return False

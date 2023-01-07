@@ -597,7 +597,7 @@ QPushButton
 {
     color: #eff0f1;
     background-color: #323232;
-    border-width: 1px;
+    border-width: 2px;
     border-color: #76797C;
     border-style: solid;
     padding: 5px;
@@ -947,9 +947,9 @@ QDockWidget::close-button:pressed, QDockWidget::float-button:pressed {
 
 QTreeView, QListView
 {
-    border: 1px solid #76797C;
+    border: 2px solid #76797C;
     background-color: #1e1e1e;
-    border-radius: 5px;
+    border-radius: 6px;
 }
 
 QTreeView:branch:selected, QTreeView:branch:hover

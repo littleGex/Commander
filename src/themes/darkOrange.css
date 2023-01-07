@@ -17,8 +17,8 @@ QTreeView, QListView
 {
     background-color: silver;
     margin-left: 5px;
-    border: 1px solid #1e1e1e;
-    border-radius: 5px;
+    border: 2px solid #1e1e1e;
+    border-radius: 6px;
 }
 
 QWidget:item:hover
@@ -107,10 +107,7 @@ QPushButton
     border-color: #1e1e1e;
     border-style: solid;
     border-radius: 6;
-    padding: 3px;
-    font-size: 12px;
-    padding-left: 5px;
-    padding-right: 5px;
+    font-size: 13px;
 }
 
 QPushButton:pressed

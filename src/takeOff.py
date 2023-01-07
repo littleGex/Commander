@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox, QFileDialog, \
     QApplication, QLineEdit, QDialog, QFileSystemModel
 from PyQt5.QtCore import pyqtSlot, QModelIndex, QDir
 from PyQt5.QtGui import QIcon, QPixmap
-from dialogs import MoveDialog, CopyDialog, PermissionsDialog
+from dialogs import MoveDialog, CopyDialog, PermissionsDialog, RenameDialog
 
 
 class LaunchCommander(QMainWindow):
@@ -43,6 +43,10 @@ class LaunchCommander(QMainWindow):
 
     # ======================================================================
     def setup_ui(self):
+        with open('themes/default.css') as file:
+            style = file.read()
+        self.setStyleSheet(style)
+
         self.header_indices_left = [1, 2, 3]
         path_left = self.directory_line_1.text()
         self.folder_viewer_left(path_left)
@@ -87,6 +91,7 @@ class LaunchCommander(QMainWindow):
         self.compare_button.released.connect(self.compare_it)
         self.delete_button.released.connect(lambda: self.remove_item(self.active_item))
         self.permission_button.released.connect(self.permission_it)
+        self.rename_button.released.connect(self.rename_it)
 
     def set_menu(self):
         # set up windows menubar
@@ -141,7 +146,9 @@ class LaunchCommander(QMainWindow):
         self.setStyleSheet(style)
 
     def default_sheet(self):
-        self.setStyleSheet("")
+        with open('themes/default.css') as file:
+            style = file.read()
+        self.setStyleSheet(style)
 
     def move_down_left(self):
         current_path = self.directory_line_1.text()
@@ -352,7 +359,7 @@ class LaunchCommander(QMainWindow):
                 self.move_dialog = MoveDialog(self, self.active_item, self.directory_line_1.text())
         else:
             self.move_dialog = MoveDialog(self)
-            logging.info('No files or directories selected')
+            logging.error('No files or directories selected')
 
         self.move_dialog.show()
 
@@ -364,7 +371,7 @@ class LaunchCommander(QMainWindow):
                 self.copy_dialog = CopyDialog(self, self.active_item, self.directory_line_1.text())
         else:
             self.copy_dialog = CopyDialog(self)
-            logging.info('No files or directories selected')
+            logging.error('No files or directories selected')
 
         self.copy_dialog.show()
 
@@ -379,7 +386,7 @@ class LaunchCommander(QMainWindow):
         item_1 = os.path.abspath(self.current_left)
         item_2 = os.path.abspath(self.current_right)
 
-        logging.info(f"Compaing {item_1} and {item_2}")
+        logging.info(f"Comparing {item_1} and {item_2}")
 
         subprocess.Popen(["tkdiff", item_1, item_2])
 
@@ -442,6 +449,14 @@ class LaunchCommander(QMainWindow):
             return True
         else:
             return False
+
+    def rename_it(self):
+        if self.active_item:
+            self.rename_dialog = RenameDialog(self, os.path.abspath(self.active_item))
+        else:
+            logging.error("No files or directories selected")
+            return
+        self.rename_dialog.show()
 
     @staticmethod
     def close_it():
