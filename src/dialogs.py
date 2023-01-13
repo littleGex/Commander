@@ -124,8 +124,8 @@ class PermissionsDialog(QDialog):
         self.file_permissions: int = 0
         self.folder_permissions: int = 0
 
-        self.owner_file_dict, self.owner_file_dict_2, self.group_file_dict, self.group_file_dict_2, \
-        self.others_file_dict, self.others_file_dict_2 = Supports.dicts(self)
+        self.owner_file_dict, self.owner_file_dict_2, self.group_file_dict, self.group_file_dict_2,\
+            self.others_file_dict, self.others_file_dict_2 = Supports.dicts(self)
 
         self.set_up(path)
 
@@ -135,7 +135,7 @@ class PermissionsDialog(QDialog):
 
         self.item_path_edit.setText(path)
 
-        # self.buttonBox.accepted.connect(self.calculate_permissions)
+        self.buttonBox.accepted.connect(self.change_permissions)
 
     def start_boxes(self, path, current):
         boxes = []
@@ -169,6 +169,12 @@ class PermissionsDialog(QDialog):
                 box.setChecked(True)
 
             self.folder_permissions = current
+
+    def change_permissions(self):
+        self.calculate_permissions_file()
+        self.calculate_permissions_folder()
+
+        self.set_permissions(self.item_path_edit.text())
 
     def calculate_permissions_file(self):
         """
@@ -210,7 +216,7 @@ class PermissionsDialog(QDialog):
         if self.others_exe_check.isChecked():
             others += 1
 
-        self.file_permissions = int(f"{owner}{group}{others}")
+        self.file_permissions = int(f"0o{owner}{group}{others}", 8)
 
     def calculate_permissions_folder(self):
         """
@@ -252,7 +258,35 @@ class PermissionsDialog(QDialog):
         if self.others_exe_check_2.isChecked():
             others += 1
 
-        self.folder_permissions = int(f"{owner}{group}{others}")
+        self.folder_permissions = int(f"{owner}{group}{others}", 8)
+
+    def set_permissions(self, path: str):
+        """
+        This function attempts to set the permissions of the file/s and/or folder/s
+        given by the user as defined in the dialog.
+
+        A further check is made if a folder is selected, whether the change is a
+        recursive change or not.
+
+        :param path: Path of the user selected file/folder for thich the permissions should
+        be updated.
+        """
+        if os.path.isfile(path):
+            os.chmod(path, self.file_permissions)
+            logging.info(f"Permissions of {path} have been updated to {self.file_permissions}")
+        else:
+            if self.recursive_check.isChecked():
+                for root, dirs, files in os.walk(path):
+                    for d in dirs:
+                        os.chmod(os.path.join(root, d), self.folder_permissions)
+                    for f in files:
+                        os.chmod(os.path.join(root, f), self.file_permissions)
+                logging.info(f"All files and directories in {path} have been updated to: \n"
+                             f"{self.file_permissions} \n"
+                             f"{self.folder_permissions}")
+            else:
+                os.chmod(path, self.folder_permissions)
+                logging.info(f"Permissions of {path} have been updated to {self.folder_permissions}")
 
 
 class RenameDialog(QDialog):
@@ -307,7 +341,7 @@ class RenameDialog(QDialog):
                     os.rename(source, rename_to)
                     logging.info(f"Renamed {source} to {rename_to}")
                 except OSError as error:
-                    print(error)
+                    logging.error(error)
         except OSError as error:
             logging.error(error)
 
