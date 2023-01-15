@@ -24,3 +24,8 @@ QTreeView
   border:  2px solid lightgray;
   border-radius: 6;
 }
+QCheckBox::indicator:hover
+{
+    border: 1px solid LightCyan;
+    border-radius: 6px;
+}

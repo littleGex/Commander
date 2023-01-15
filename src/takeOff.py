@@ -8,9 +8,11 @@ from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox, QFileDialog, \
     QApplication, QLineEdit, QDialog, QFileSystemModel
-from PyQt5.QtCore import pyqtSlot, QModelIndex, QDir
+from PyQt5.QtCore import pyqtSlot, QModelIndex, QDir, QSettings
 from PyQt5.QtGui import QIcon, QPixmap
-from dialogs import MoveDialog, CopyDialog, PermissionsDialog, RenameDialog
+from dialogs import MoveDialog, CopyDialog, PermissionsDialog, RenameDialog, \
+    MakeFileDialog, MakeFolderDialog
+from support_functions import Supporting
 
 
 class LaunchCommander(QMainWindow):
@@ -18,15 +20,17 @@ class LaunchCommander(QMainWindow):
         super(LaunchCommander, self).__init__(parent)
         uic.loadUi('../ui/Main.ui', self)
 
+        self.settings = QSettings('Commander', 'CommanderDesktop')
+
         self.fileModel = None
         self.hidden_1 = False
         self.hidden_2 = False
 
-        self.active_item: str = None
-        self.active_tree: str = None
+        self.active_item: str = ''
+        self.active_tree: str = ''
 
-        self.current_left: str = None
-        self.current_right: str = None
+        self.current_left: str = ''
+        self.current_right: str = ''
 
         self.header_indices_left: list = []
         self.header_indices_right: list = []
@@ -43,9 +47,10 @@ class LaunchCommander(QMainWindow):
 
     # ======================================================================
     def setup_ui(self):
-        with open('themes/default.css') as file:
-            style = file.read()
-        self.setStyleSheet(style)
+        if self.settings.contains("theme_selection"):
+            with open(self.settings.value('theme_selection')) as file:
+                style = file.read()
+            self.setStyleSheet(style)
 
         self.header_indices_left = [1, 2, 3]
         path_left = self.directory_line_1.text()
@@ -86,12 +91,16 @@ class LaunchCommander(QMainWindow):
         self.treeView_2.clicked.connect(self.active_left)
         self.treeView_4.clicked.connect(self.active_right)
 
+        # Set button functions
         self.move_button.released.connect(self.move_it)
         self.copy_button.released.connect(self.copy_it)
         self.compare_button.released.connect(self.compare_it)
         self.delete_button.released.connect(lambda: self.remove_item(self.active_item))
         self.permission_button.released.connect(self.permission_it)
         self.rename_button.released.connect(self.rename_it)
+        self.edit_button.released.connect(lambda: Supporting.read_write(self.active_item))
+        self.make_file_button.released.connect(self.make_file)
+        self.make_folder_button.released.connect(self.make_folder)
 
     def set_menu(self):
         # set up windows menubar
@@ -139,16 +148,19 @@ class LaunchCommander(QMainWindow):
         with open('themes/darkGrey.css') as file:
             style = file.read()
         self.setStyleSheet(style)
+        self.settings.setValue('theme_selection', 'themes/darkGrey.css')
 
     def orange_sheet(self):
         with open('themes/darkOrange.css') as file:
             style = file.read()
         self.setStyleSheet(style)
+        self.settings.setValue('theme_selection', 'themes/darkOrange.css')
 
     def default_sheet(self):
         with open('themes/default.css') as file:
             style = file.read()
         self.setStyleSheet(style)
+        self.settings.setValue('theme_selection', 'themes/default.css')
 
     def move_down_left(self):
         current_path = self.directory_line_1.text()
@@ -220,7 +232,6 @@ class LaunchCommander(QMainWindow):
     def on_tree_view_clicked_left(self, index):
         index_item = self.dirModel_left.index(index.row(), 0, index.parent())
 
-        filename = self.dirModel_left.fileName(index_item)
         filepath = self.dirModel_left.filePath(index_item)
 
         QApplication.clipboard().setText(filepath)
@@ -270,7 +281,6 @@ class LaunchCommander(QMainWindow):
     def on_tree_view_clicked_right(self, index):
         index_item = self.dirModel_right.index(index.row(), 0, index.parent())
 
-        filename = self.dirModel_right.fileName(index_item)
         filepath = self.dirModel_right.filePath(index_item)
 
         QApplication.clipboard().setText(filepath)
@@ -292,6 +302,7 @@ class LaunchCommander(QMainWindow):
         3: Date modified
 
         :param num: Number to add/remove from the header list.
+        :param side:Denotes which treeview is affected.
         :return: user modified header index list.
         """
         if side == 'left':
@@ -375,6 +386,30 @@ class LaunchCommander(QMainWindow):
 
         self.copy_dialog.show()
 
+    def make_file(self):
+        if self.active_item:
+            if self.active_tree == 'treeView_2':
+                self.make_file = MakeFileDialog(self, self.directory_line_2.text())
+            else:
+                self.make_file = MakeFileDialog(self, self.directory_line_1.text())
+        else:
+            self.make_file = MakeFileDialog(self)
+            logging.error('No files or directories selected')
+
+        self.make_file.show()
+
+    def make_folder(self):
+        if self.active_item:
+            if self.active_tree == 'treeView_2':
+                self.make_folder = MakeFolderDialog(self, self.directory_line_2.text())
+            else:
+                self.make_folder = MakeFolderDialog(self, self.directory_line_1.text())
+        else:
+            self.make_folder = MakeFolderDialog(self)
+            logging.error('No files or directories selected')
+
+        self.make_folder.show()
+
     def compare_it(self):
         if not self.current_left:
             logging.warning("No item selected in left explorer")
@@ -443,9 +478,9 @@ class LaunchCommander(QMainWindow):
         remove_check_dialog.setText("Folder is not empty - do you want to continue with delete")
         remove_check_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
 
-        returnValue = remove_check_dialog.exec()
+        return_value = remove_check_dialog.exec()
 
-        if returnValue == QMessageBox.Ok:
+        if return_value == QMessageBox.Ok:
             return True
         else:
             return False
@@ -468,10 +503,9 @@ class LaunchCommander(QMainWindow):
 
     @pyqtSlot(QModelIndex)
     def active_left(self, index):
-        indexItem = self.fileModel_left.index(index.row(), 0, index.parent())
+        index_item = self.fileModel_left.index(index.row(), 0, index.parent())
 
-        filename = self.fileModel_left.fileName(indexItem)
-        filepath = self.fileModel_left.filePath(indexItem)
+        filepath = self.fileModel_left.filePath(index_item)
 
         widget = self.focusWidget()
 
@@ -481,10 +515,9 @@ class LaunchCommander(QMainWindow):
 
     @pyqtSlot(QModelIndex)
     def active_right(self, index):
-        indexItem = self.fileModel_right.index(index.row(), 0, index.parent())
+        index_item = self.fileModel_right.index(index.row(), 0, index.parent())
 
-        filename = self.fileModel_right.fileName(indexItem)
-        filepath = self.fileModel_right.filePath(indexItem)
+        filepath = self.fileModel_right.filePath(index_item)
 
         widget = self.focusWidget()
 

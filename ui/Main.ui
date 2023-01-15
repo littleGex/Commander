@@ -33,6 +33,9 @@
         <height>588</height>
        </size>
       </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
         <string>Tab 1</string>
@@ -618,41 +621,61 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_9">
+           <widget class="QPushButton" name="edit_button">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>50</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>110</width>
               <height>16777215</height>
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string>Edit</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_4">
+           <widget class="QPushButton" name="make_file_button">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>50</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>110</width>
               <height>16777215</height>
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string>Create 
+ File</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_16">
+           <widget class="QPushButton" name="make_folder_button">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>50</height>
+             </size>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>80</width>
+              <width>110</width>
               <height>16777215</height>
              </size>
             </property>
             <property name="text">
-             <string>PushButton</string>
+             <string>Create 
+ Folder</string>
             </property>
            </widget>
           </item>

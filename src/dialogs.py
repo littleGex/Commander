@@ -365,3 +365,141 @@ class RenameDialog(QDialog):
             return True
         else:
             return False
+
+
+class MakeFileDialog(QDialog):
+    def __init__(self, parent, dir_1=None):
+        super(MakeFileDialog, self).__init__(parent)
+        uic.loadUi('../ui/make.ui', self)
+
+        self.setWindowIcon(QIcon('../images/add.png'))
+
+        if dir_1:
+            self.dir1 = dir_1
+        else:
+            self.dir1 = ''
+
+        self.set_up()
+
+    def set_up(self):
+        self.current_folder_label.setText('Source path')
+        self.new_name_label.setText('Name')
+
+        self.current_folder_edit.setText(self.dir1)
+
+        self.buttonBox.accepted.connect(lambda: self.make_file(self.current_folder_edit.text(),
+                                                               self.new_name_edit.text()))
+
+    @staticmethod
+    def make_file(directory: str, name: str):
+        create_as = os.path.join(directory, name)
+
+        if not os.path.isfile(create_as):
+            try:
+                with open(os.open(create_as, os.O_CREAT, 0o644)) as file:
+                    logging.info(f"{create_as} created")
+                    pass
+            except PermissionError:
+                logging.error('Operation not permitted')
+        else:
+            logging.info("File already Exists")
+            choice = MakeFileDialog._remove_dialog()
+            if choice:
+                try:
+                    os.remove(create_as)
+                    logging.info(f"Pre-existing file removed - creating {create_as}")
+                    with open(os.open(create_as, os.O_CREAT, 0o644)) as file:
+                        logging.info(f"{create_as} created")
+                        pass
+                except OSError as error:
+                    logging.error(error)
+
+    @staticmethod
+    def _remove_dialog():
+        """
+        This function creates a custom dialog to warn the user that the file to be
+            created already exists and ask whether the existing file shall be replaced.
+
+        :return: Boolean response
+        """
+        remove_check_dialog = QMessageBox()
+        icon = QIcon('../images/edit.png')
+        remove_check_dialog.setIconPixmap(icon.pixmap(20, 20))
+        remove_check_dialog.setWindowTitle("Check Creation Event")
+        remove_check_dialog.setText("File already exists with this name - delete existing and create a new file?")
+        remove_check_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+
+        returnValue = remove_check_dialog.exec()
+
+        if returnValue == QMessageBox.Yes:
+            return True
+        else:
+            return False
+
+
+class MakeFolderDialog(QDialog):
+    def __init__(self, parent, dir_1=None):
+        super(MakeFolderDialog, self).__init__(parent)
+        uic.loadUi('../ui/make.ui', self)
+
+        self.setWindowIcon(QIcon('../images/add.png'))
+
+        if dir_1:
+            self.dir1 = dir_1
+        else:
+            self.dir1 = ''
+
+        self.set_up()
+
+    def set_up(self):
+        self.current_folder_label.setText('Source path')
+        self.new_name_label.setText('Name')
+
+        self.current_folder_edit.setText(self.dir1)
+
+        self.buttonBox.accepted.connect(lambda: self.make_folder(self.current_folder_edit.text(),
+                                                                 self.new_name_edit.text()))
+
+    @staticmethod
+    def make_folder(directory: str, name: str):
+        create_as = os.path.join(directory, name)
+
+        if not os.path.isdir(create_as):
+            try:
+                os.mkdir(create_as, 0o755)
+                logging.info(f"{create_as} created")
+            except PermissionError:
+                logging.error('Operation not permitted')
+        else:
+            logging.info("File already Exists")
+            choice = MakeFolderDialog._remove_dialog()
+            if choice:
+                try:
+                    os.remove(create_as)
+                    logging.info(f"Pre-existing folder removed - creating {create_as}")
+                    os.mkdir(create_as, 0o755)
+                    logging.info(f"{create_as} created")
+                except OSError as error:
+                    logging.error(error)
+
+    @staticmethod
+    def _remove_dialog():
+        """
+        This function creates a custom dialog to warn the user that the folder to be
+        created already exists and ask whether the existing folder shall be replaced.
+
+        :return: Boolean response
+        """
+        remove_check_dialog = QMessageBox()
+        icon = QIcon('../images/edit.png')
+        remove_check_dialog.setIconPixmap(icon.pixmap(20, 20))
+        remove_check_dialog.setWindowTitle("Check Creation Event")
+        remove_check_dialog.setText("Folder already exists with this name - delete existing and create a new folder?")
+        remove_check_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+
+        return_value = remove_check_dialog.exec()
+
+        if return_value == QMessageBox.Yes:
+            return True
+        else:
+            return False

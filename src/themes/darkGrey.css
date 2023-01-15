@@ -79,36 +79,40 @@ QGroupBox::indicator
     margin-left: 2px;
 }
 
-QCheckBox::indicator:unchecked
+/*QCheckBox::indicator:unchecked
 {
     image: url('rc/checkbox_unchecked.png');
-}
+}*/
 
-QCheckBox::indicator:unchecked:hover,
 QCheckBox::indicator:unchecked:focus,
 QCheckBox::indicator:unchecked:pressed,
 QGroupBox::indicator:unchecked:hover,
 QGroupBox::indicator:unchecked:focus,
 QGroupBox::indicator:unchecked:pressed
 {
-  border: none;
-    image: url('rc/checkbox_unchecked_focus.png');
+  border: 1 px solid #eff0f1;
+  border-radius: 6px;
 }
 
 QCheckBox::indicator:checked
 {
-    image: url('rc/checkbox_checked.png');
+    image: url('themes/rc/checkbox_checked.png');
 }
 
-QCheckBox::indicator:checked:hover,
+QCheckBox::indicator:hover
+{
+    border: 1px solid #ebebf2;
+    border-radius: 6px;
+}
+
 QCheckBox::indicator:checked:focus,
 QCheckBox::indicator:checked:pressed,
 QGroupBox::indicator:checked:hover,
 QGroupBox::indicator:checked:focus,
 QGroupBox::indicator:checked:pressed
 {
-    border: none;
-    image: url('rc/checkbox_checked_focus.png');
+  border: 1 px solid #eff0f1;
+  border-radius: 6px;
 }
 
 
@@ -954,39 +958,39 @@ QTreeView, QListView
 
 QTreeView:branch:selected, QTreeView:branch:hover
 {
-    background: url('rc/transparent.png');
+    background: url('themes/rc/transparent.png');
 }
 
 QTreeView::branch:has-siblings:!adjoins-item {
-    border-image: url('rc/transparent.png');
+    border-image: url('themes/rc/transparent.png');
 }
 
 QTreeView::branch:has-siblings:adjoins-item {
-    border-image: url('rc/transparent.png');
+    border-image: url('themes/rc/transparent.png');
 }
 
 QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-    border-image: url('rc/transparent.png');
+    border-image: url('themes/rc/transparent.png');
 }
 
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
-    image: url('rc/branch_closed.png');
+    image: url('themes/rc/branch_closed.png');
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings  {
-    image: url('rc/branch_open.png');
+    image: url('themes/rc/branch_open.png');
 }
 
 QTreeView::branch:has-children:!has-siblings:closed:hover,
 QTreeView::branch:closed:has-children:has-siblings:hover {
-    image: url('rc/branch_closed-on.png');
+    image: url('themes/rc/branch_closed-on.png');
     }
 
 QTreeView::branch:open:has-children:!has-siblings:hover,
 QTreeView::branch:open:has-children:has-siblings:hover  {
-    image: url('rc/branch_open-on.png');
+    image: url('themes/rc/branch_open-on.png');
     }
 
 QListView::item:!selected:hover, QTreeView::item:!selected:hover  {
