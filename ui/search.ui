@@ -1,90 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>rename_dialog</class>
- <widget class="QDialog" name="rename_dialog">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>541</width>
-    <height>165</height>
+    <width>653</width>
+    <height>360</height>
    </rect>
   </property>
-  <property name="minimumSize">
+  <property name="maximumSize">
    <size>
-    <width>541</width>
-    <height>165</height>
+    <width>750</width>
+    <height>540</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Rename Dialog</string>
+   <string>Search Dialog</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../images/edit.png</normaloff>../images/edit.png</iconset>
+    <normaloff>../images/search.png</normaloff>../images/search.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="current_name_label">
+     <item row="0" column="3">
+      <widget class="QLineEdit" name="search_edit">
        <property name="minimumSize">
         <size>
-         <width>140</width>
-         <height>0</height>
+         <width>200</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="location_label">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>20</height>
         </size>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="search_label">
+       <property name="minimumSize">
+        <size>
+         <width>50</width>
+         <height>20</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="current_name_edit">
+      <widget class="QLineEdit" name="location_edit">
        <property name="minimumSize">
         <size>
-         <width>350</width>
+         <width>250</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QPushButton" name="search_button">
+       <property name="minimumSize">
+        <size>
+         <width>20</width>
          <height>20</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>500</width>
-         <height>40</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="rename_location_edit">
-       <property name="minimumSize">
-        <size>
-         <width>350</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>500</width>
-         <height>40</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="rename_location_label">
-       <property name="minimumSize">
-        <size>
-         <width>140</width>
-         <height>0</height>
+         <width>30</width>
+         <height>30</height>
         </size>
        </property>
        <property name="text">
-        <string>TextLabel</string>
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>../images/search.png</normaloff>../images/search.png</iconset>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="1" column="0" colspan="5">
+      <widget class="QListWidget" name="search_list">
+       <property name="minimumSize">
+        <size>
+         <width>500</width>
+         <height>250</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>720</width>
+         <height>700</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -103,7 +130,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>rename_dialog</receiver>
+   <receiver>Dialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -119,7 +146,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>rename_dialog</receiver>
+   <receiver>Dialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -4,15 +4,30 @@ import shutil
 import sys
 import logging
 import subprocess
+import pwd
 from pathlib import Path
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox, QFileDialog, \
-    QApplication, QLineEdit, QDialog, QFileSystemModel
+    QApplication, QFileSystemModel
 from PyQt5.QtCore import pyqtSlot, QModelIndex, QDir, QSettings
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon
 from dialogs import MoveDialog, CopyDialog, PermissionsDialog, RenameDialog, \
-    MakeFileDialog, MakeFolderDialog
+    MakeFileDialog, MakeFolderDialog, SearchDialog
 from support_functions import Supporting
+
+
+start = f"PyCommander session for user: {pwd.getpwuid(os.getuid())[0]}"
+
+
+class QTextEditLogger(logging.Handler):
+    def __init__(self, widget):
+        super().__init__()
+        self.widget = widget
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
 
 
 class LaunchCommander(QMainWindow):
@@ -21,6 +36,14 @@ class LaunchCommander(QMainWindow):
         uic.loadUi('../ui/Main.ui', self)
 
         self.settings = QSettings('Commander', 'CommanderDesktop')
+
+        log_text_box = QTextEditLogger(self.plainTextEdit)
+        log_text_box.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logging.getLogger().addHandler(log_text_box)
+        logging.getLogger().setLevel(logging.INFO)
+
+        logging.info(start)
+        logging.info(f"Session file: {QSettings.fileName(self.settings)}")
 
         self.fileModel = None
         self.hidden_1 = False
@@ -35,23 +58,34 @@ class LaunchCommander(QMainWindow):
         self.header_indices_left: list = []
         self.header_indices_right: list = []
 
+        self.restore_settings()
         self.setup_ui()
         self.set_menu()
 
-        # logging.basicConfig(format='%(asctime)s %(message)s')
-        # logging.basicConfig(level=logging.INFO)
-        # logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
-
-        logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        logging.getLogger().setLevel(logging.INFO)
-
     # ======================================================================
-    def setup_ui(self):
+    def restore_settings(self):
         if self.settings.contains("theme_selection"):
+            logging.info(f"GUI theme: {self.settings.value('theme_selection')}")
             with open(self.settings.value('theme_selection')) as file:
                 style = file.read()
             self.setStyleSheet(style)
 
+        if self.settings.contains("path_1"):
+            self.directory_line_1.setText(self.settings.value("path_1"))
+            logging.info(f"Window 1 set as: {self.settings.value('path_1')}")
+
+        if self.settings.contains("path_2"):
+            self.directory_line_2.setText(self.settings.value("path_2"))
+            logging.info(f"Window 2 set as: {self.settings.value('path_2')}")
+
+        if self.settings.contains("tree_1"):
+            if self.settings.value("tree_1"):
+                self.hide_unhide(1)
+        if self.settings.contains("tree_2"):
+            if self.settings.value("tree_2"):
+                self.hide_unhide(2)
+
+    def setup_ui(self):
         self.header_indices_left = [1, 2, 3]
         path_left = self.directory_line_1.text()
         self.folder_viewer_left(path_left)
@@ -101,6 +135,8 @@ class LaunchCommander(QMainWindow):
         self.edit_button.released.connect(lambda: Supporting.read_write(self.active_item))
         self.make_file_button.released.connect(self.make_file)
         self.make_folder_button.released.connect(self.make_folder)
+        self.zip_button.released.connect(self.zipper)
+        self.search_button.released.connect(self.search_item)
 
     def set_menu(self):
         # set up windows menubar
@@ -118,11 +154,11 @@ class LaunchCommander(QMainWindow):
         file_menu.addAction(new_session)
         # new_session.triggered.connect(self.newSession)
 
-        quitz = QAction("Quit", self)
-        quitz.setShortcut("Ctrl+Q")
-        quitz.setStatusTip("Click to Exit")
-        file_menu.addAction(quitz)
-        quitz.triggered.connect(self.close_it)
+        quit_app = QAction("Quit", self)
+        quit_app.setShortcut("Ctrl+Q")
+        quit_app.setStatusTip("Click to Exit")
+        file_menu.addAction(quit_app)
+        quit_app.triggered.connect(self.close_it)
 
         themes = settings.addMenu('Themes')
 
@@ -138,11 +174,10 @@ class LaunchCommander(QMainWindow):
         themes.addAction(default)
         default.triggered.connect(self.default_sheet)
 
-        ctrls = QAction("Create ctrl file", self)
-        ctrls.setShortcut("Ctrl+.")
-        ctrls.setStatusTip("Click to create ctrl file")
-        data_menu.addAction(ctrls)
-        # ctrls.triggered.connect(self.ctrls)
+        rename_it = QAction("Rename", self)
+        rename_it.setShortcut("F2")
+        data_menu.addAction(rename_it)
+        rename_it.triggered.connect(self.rename_it)
 
     def grey_sheet(self):
         with open('themes/darkGrey.css') as file:
@@ -220,10 +255,10 @@ class LaunchCommander(QMainWindow):
 
     def folders_left(self):
         self.dirModel_left = QFileSystemModel()
-        self.dirModel_left.setRootPath(self.directory_line_1.text())
+        self.dirModel_left.setRootPath(str(Path.home()))
         self.view_left = self.treeView_1
         self.view_left.setModel(self.dirModel_left)
-        self.view_left.setRootIndex(self.dirModel_left.index(self.directory_line_1.text()))
+        self.view_left.setRootIndex(self.dirModel_left.index(str(Path.home())))
         self.view_left.clicked.connect(self.on_tree_view_clicked_left)
 
         self.treeView_1.setColumnWidth(0, 200)
@@ -269,10 +304,10 @@ class LaunchCommander(QMainWindow):
 
     def folders_right(self):
         self.dirModel_right = QFileSystemModel()
-        self.dirModel_right.setRootPath(self.directory_line_2.text())
+        self.dirModel_right.setRootPath(str(Path.home()))
         self.view_right = self.treeView_3
         self.view_right.setModel(self.dirModel_right)
-        self.view_right.setRootIndex(self.dirModel_right.index(self.directory_line_2.text()))
+        self.view_right.setRootIndex(self.dirModel_right.index(str(Path.home())))
         self.view_right.clicked.connect(self.on_tree_view_clicked_right)
 
         self.treeView_3.setColumnWidth(0, 200)
@@ -335,6 +370,15 @@ class LaunchCommander(QMainWindow):
                 self.treeView_3.hide()
                 self.hidden_2 = True
 
+    def zipper(self):
+        """
+        This function launches the zipping of the selected item
+        """
+        if self.active_item:
+            Supporting.zip_it(self.active_item)
+        else:
+            logging.error('No files or directories selected')
+
     def _terminal(self, side: str):
         """
         This function attempts to open a terminal from the currently selected folder.
@@ -389,9 +433,9 @@ class LaunchCommander(QMainWindow):
     def make_file(self):
         if self.active_item:
             if self.active_tree == 'treeView_2':
-                self.make_file = MakeFileDialog(self, self.directory_line_2.text())
-            else:
                 self.make_file = MakeFileDialog(self, self.directory_line_1.text())
+            else:
+                self.make_file = MakeFileDialog(self, self.directory_line_2.text())
         else:
             self.make_file = MakeFileDialog(self)
             logging.error('No files or directories selected')
@@ -401,9 +445,9 @@ class LaunchCommander(QMainWindow):
     def make_folder(self):
         if self.active_item:
             if self.active_tree == 'treeView_2':
-                self.make_folder = MakeFolderDialog(self, self.directory_line_2.text())
-            else:
                 self.make_folder = MakeFolderDialog(self, self.directory_line_1.text())
+            else:
+                self.make_folder = MakeFolderDialog(self, self.directory_line_2.text())
         else:
             self.make_folder = MakeFolderDialog(self)
             logging.error('No files or directories selected')
@@ -437,6 +481,7 @@ class LaunchCommander(QMainWindow):
         item = os.path.abspath(selected)
 
         if os.path.isfile(item):
+            # ToDo: Add go/no-go dialog before delete event
             try:
                 os.remove(item)
                 logging.info(f"{item} removed")
@@ -463,6 +508,23 @@ class LaunchCommander(QMainWindow):
                 logging.info(f"{item} removed")
             except OSError as error:
                 print(error)
+
+    def search_item(self):
+        if os.path.isdir(self.active_item):
+            if self.active_tree == 'treeView_2':
+                self.search_dialog = SearchDialog(self, os.path.abspath(self.active_item), 1)
+            else:
+                self.search_dialog = SearchDialog(self, os.path.abspath(self.active_item), 2)
+        elif self.active_tree:
+            if self.active_tree == 'treeView_2':
+                self.search_dialog = SearchDialog(self, self.directory_line_1.text(), 1)
+            else:
+                self.search_dialog = SearchDialog(self, self.directory_line_2.text(), 2)
+        else:
+            self.search_dialog = SearchDialog(self)
+            logging.error('No files or directories selected')
+
+        self.search_dialog.show()
 
     @staticmethod
     def _remove_dialog():
@@ -493,13 +555,18 @@ class LaunchCommander(QMainWindow):
             return
         self.rename_dialog.show()
 
-    @staticmethod
-    def close_it():
+    def close_it(self):
         """
         This function attempts to close the main user interface.
         """
         logging.info("Session closing")
-        sys.exit()
+
+        self.settings.setValue("path_1", self.directory_line_1.text())
+        self.settings.setValue("path_2", self.directory_line_2.text())
+        self.settings.setValue("tree_1", self.treeView_1.isHidden())
+        self.settings.setValue("tree_2", self.treeView_3.isHidden())
+
+        QApplication.quit()
 
     @pyqtSlot(QModelIndex)
     def active_left(self, index):

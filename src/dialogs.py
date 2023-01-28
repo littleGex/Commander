@@ -1,11 +1,10 @@
 import os
 import sys
 import logging
-import subprocess
+import re
 import shutil
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QMainWindow, QAction, QMessageBox, QFileDialog, QApplication, QLineEdit, QDialog
-from PyQt5.QtCore import pyqtSlot, QModelIndex
+from PyQt5.QtWidgets import QMessageBox, QDialog
 from PyQt5.QtGui import QIcon
 from support_dictionaries import Supports
 
@@ -138,8 +137,6 @@ class PermissionsDialog(QDialog):
         self.buttonBox.accepted.connect(self.change_permissions)
 
     def start_boxes(self, path, current):
-        boxes = []
-        boxes_1 = []
         if os.path.isfile(path):
             boxes = self.owner_file_dict[current[0]]\
                     + self.group_file_dict[current[1]]\
@@ -359,9 +356,9 @@ class RenameDialog(QDialog):
         remove_check_dialog.setText("File already exists with this name - delete existing and rename?")
         remove_check_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
 
-        returnValue = remove_check_dialog.exec()
+        return_value = remove_check_dialog.exec()
 
-        if returnValue == QMessageBox.Yes:
+        if return_value == QMessageBox.Yes:
             return True
         else:
             return False
@@ -503,3 +500,81 @@ class MakeFolderDialog(QDialog):
             return True
         else:
             return False
+
+
+class SearchDialog(QDialog):
+    def __init__(self, parent, dir_1: str = None, active_view: int = 1):
+        super(SearchDialog, self).__init__(parent)
+        uic.loadUi('../ui/search.ui', self)
+
+        self.setWindowIcon(QIcon('../images/search.png'))
+
+        if dir_1:
+            self.dir1 = dir_1
+        else:
+            self.dir1 = ''
+
+        self.selected = ''
+        self.active_view = active_view
+
+        self.set_up()
+
+    def set_up(self):
+        self.location_label.setText("Location")
+        self.search_label.setText("Search")
+
+        self.location_edit.setText(self.dir1)
+
+        self.search_button.released.connect(self._find_matches)
+        self.search_list.itemClicked.connect(self._selected_item)
+
+        self.buttonBox.accepted.connect(self._share_result)
+
+    def _find_matches(self):
+        if not os.path.isdir(self.location_edit.text()):
+            location = ''
+            logging.error("No directory to search selected")
+        else:
+            location = self.location_edit.text()
+        if not self.search_edit.text():
+            find = ''
+            logging.error("No search criteria provided")
+        else:
+            find = self.search_edit.text().lower()
+
+        if location and find:
+            self.__load_matches(location, find)
+        else:
+            self.search_list.clear()
+
+    def __load_matches(self, location: str, find: str):
+        matches = []
+
+        for path, subdirs, files in os.walk(location):
+            for p in path:
+                if re.findall(find, p.lower()):
+                    matches.append(os.path.join(path, p))
+            for d in subdirs:
+                if re.findall(find, d.lower()):
+                    matches.append(os.path.join(path, d))
+            for f in files:
+                if re.findall(find, f.lower()):
+                    matches.append(os.path.join(path, f))
+
+        self.__show_matches(matches)
+
+    def __show_matches(self, matches: list):
+        self.search_list.clear()
+
+        self.search_list.addItems(matches)
+
+    def _selected_item(self, item):
+        self.selected = item.text()
+        print(self.selected)
+
+    def _share_result(self):
+        if self.selected:
+            if self.active_view == 1:
+                self.parent().directory_line_1.setText(os.path.dirname(self.selected))
+            else:
+                self.parent().directory_line_2.setText(os.path.dirname(self.selected))
