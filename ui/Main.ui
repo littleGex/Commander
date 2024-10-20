@@ -523,8 +523,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Move 
-  Ctrl+M</string>
+             <string>Move
+Ctrl+M</string>
             </property>
            </widget>
           </item>
@@ -543,8 +543,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Copy 
-  Ctrl+C</string>
+             <string>Copy
+Ctrl+C</string>
             </property>
            </widget>
           </item>
@@ -582,8 +582,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Delete 
-  Ctrl+D</string>
+             <string>Delete
+Ctrl+D</string>
             </property>
            </widget>
           </item>
@@ -608,8 +608,8 @@
              </size>
             </property>
             <property name="text">
-             <string>change 
- permissions</string>
+             <string>change
+permissions</string>
             </property>
            </widget>
           </item>
@@ -628,8 +628,8 @@
              </size>
             </property>
             <property name="text">
-             <string>rename 
- F2</string>
+             <string>rename
+F2</string>
             </property>
            </widget>
           </item>
@@ -649,7 +649,7 @@
             </property>
             <property name="text">
              <string>Edit 
-  Ctrl+E</string>
+Ctrl+E</string>
             </property>
            </widget>
           </item>
@@ -668,8 +668,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Create 
- File</string>
+             <string>Create
+File</string>
             </property>
            </widget>
           </item>
@@ -688,8 +688,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Create 
- Folder</string>
+             <string>Create
+Folder</string>
             </property>
            </widget>
           </item>
@@ -727,47 +727,8 @@
              </size>
             </property>
             <property name="text">
-             <string>Search 
- Ctrl+F</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_10">
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_12">
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_14">
-            <property name="maximumSize">
-             <size>
-              <width>80</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushButton</string>
+             <string>Search
+Ctrl+F</string>
             </property>
            </widget>
           </item>

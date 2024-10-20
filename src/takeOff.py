@@ -179,6 +179,31 @@ class LaunchCommander(QMainWindow):
         data_menu.addAction(rename_it)
         rename_it.triggered.connect(self.rename_it)
 
+        copy_it = QAction("Copy", self)
+        copy_it.setShortcut("Ctrl+C")
+        data_menu.addAction(copy_it)
+        copy_it.triggered.connect(self.copy_it)
+
+        move_it = QAction("Move", self)
+        move_it.setShortcut("Ctrl+M")
+        data_menu.addAction(move_it)
+        move_it.triggered.connect(self.move_it)
+
+        edit_it = QAction("Edit", self)
+        edit_it.setShortcut("Ctrl+E")
+        data_menu.addAction(edit_it)
+        edit_it.triggered.connect(lambda: Supporting.read_write(self.active_item))
+
+        search_it = QAction("Search", self)
+        search_it.setShortcut("Ctrl+F")
+        data_menu.addAction(search_it)
+        search_it.triggered.connect(self.search_item)
+
+        delete_it = QAction("Delete", self)
+        delete_it.setShortcut("Ctrl+D")
+        data_menu.addAction(delete_it)
+        delete_it.triggered.connect(lambda: self.remove_item(self.active_item))
+
     def grey_sheet(self):
         with open('themes/darkGrey.css') as file:
             style = file.read()
@@ -387,8 +412,10 @@ class LaunchCommander(QMainWindow):
         """
         if side == 'left':
             os.system(f'open -a Terminal {self.directory_line_1.text()}')
+            # os.system(f"open -a Warp.app {self.directory_line_1.text()}")
         else:
             os.system(f'open -a Terminal {self.directory_line_2.text()}')
+            # os.system(f"open -a Warp.app {self.directory_line_2.text()}")
 
     def match(self, side: str):
         """
