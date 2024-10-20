@@ -1,9 +1,8 @@
 import os
-import sys
 import logging
 import re
 import shutil
-from PyQt5 import QtWidgets, uic
+from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from PyQt5.QtGui import QIcon
 from support_dictionaries import Supports
